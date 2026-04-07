@@ -1,0 +1,59 @@
+@startuml ecomm-azure-architecture
+skinparam componentStyle rectangle
+skinparam ArrowColor #0A66C2
+skinparam ComponentBorderColor #0A66C2
+skinparam defaultFontName Segoe UI
+
+rectangle "Azure Subscription" {
+
+  package "Staging (West Europe)" {
+    rectangle "Resource Group: rg-ecomm-staging-weu" {
+      rectangle "App Service Plan\n(Linux)" as asp_s
+      rectangle "Web App (Frontend)\n(Node.js)" as web_s
+      rectangle "Web App (REST API)\n(Node.js)" as api_s
+
+      rectangle "Azure SQL Server" as sqls_s
+      database "Azure SQL Database\nProducts & Orders" as sqldb_s
+
+      rectangle "Storage Account\n(Blob images)" as st_s
+      rectangle "Key Vault\n(Secrets)" as kv_s
+    }
+  }
+
+  package "Production (West Europe)" {
+    rectangle "Resource Group: rg-ecomm-production-weu" {
+      rectangle "App Service Plan\n(Linux)" as asp_p
+      rectangle "Web App (Frontend)\n(Node.js)" as web_p
+      rectangle "Web App (REST API)\n(Node.js)" as api_p
+
+      rectangle "Azure SQL Server" as sqls_p
+      database "Azure SQL Database\nProducts & Orders" as sqldb_p
+
+      rectangle "Storage Account\n(Blob images)" as st_p
+      rectangle "Key Vault\n(Secrets)" as kv_p
+    }
+  }
+}
+
+actor "Users" as users
+
+users --> web_s : HTTPS 443
+web_s --> api_s : HTTPS
+api_s --> sqldb_s : SQL
+api_s --> st_s : Blob REST (RBAC via Managed Identity)
+api_s --> kv_s : Secret references
+
+users --> web_p : HTTPS 443
+web_p --> api_p : HTTPS
+api_p --> sqldb_p : SQL
+api_p --> st_p : Blob REST (RBAC via Managed Identity)
+api_p --> kv_p : Secret references
+
+legend right
+  HTTPS: user + service traffic
+  SQL: API to Azure SQL Database
+  Blob REST: API to Blob Storage
+  Secrets: App settings via Key Vault
+endlegend
+
+@enduml

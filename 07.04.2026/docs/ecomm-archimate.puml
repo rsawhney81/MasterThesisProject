@@ -1,0 +1,34 @@
+@startuml ecomm-azure-archimate
+!include <archimate/Archimate>
+
+' Simple ArchiMate-style deployment view (staging + production)
+
+ARCHIMATE_APPLICATION_COMPONENT(Frontend, "Frontend Web App", "Node.js frontend")
+ARCHIMATE_APPLICATION_COMPONENT(Api, "REST API Web App", "Node.js API")
+ARCHIMATE_DATA_OBJECT(ProductData, "Product & Order Data", "Azure SQL Database")
+ARCHIMATE_APPLICATION_COMPONENT(Images, "Product Images", "Azure Blob Storage")
+ARCHIMATE_APPLICATION_COMPONENT(KV, "Secrets", "Azure Key Vault")
+
+ARCHIMATE_RELATIONSHIP(Frontend, Api, "HTTPS")
+ARCHIMATE_RELATIONSHIP(Api, ProductData, "SQL")
+ARCHIMATE_RELATIONSHIP(Api, Images, "Blob (RBAC via Managed Identity)")
+ARCHIMATE_RELATIONSHIP(Api, KV, "Secret reference / RBAC")
+ARCHIMATE_RELATIONSHIP(Frontend, KV, "Secret reference / RBAC (if needed)")
+
+ARCHIMATE_GROUPING(Staging, "Staging (West Europe)") {
+  Frontend
+  Api
+  ProductData
+  Images
+  KV
+}
+
+ARCHIMATE_GROUPING(Production, "Production (West Europe)") {
+  Frontend
+  Api
+  ProductData
+  Images
+  KV
+}
+
+@enduml
